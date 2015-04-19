@@ -9,7 +9,8 @@ output:
 
 Loading required libraries:
 
-```{r, results = 'hide'}
+
+```r
 library(lattice)
 library(dplyr)
 ```
@@ -20,7 +21,8 @@ Note: it is assumed activity.csv file is unzipped.
 
 Reading data from the file:
 
-```{r}
+
+```r
 activity <- read.csv(file = "activity.csv", header = TRUE)
 ```
 
@@ -29,29 +31,43 @@ activity <- read.csv(file = "activity.csv", header = TRUE)
 
 Total number of steps taken per day:
 
-```{r}
+
+```r
 stepsPerDay <- summarize(group_by(activity, date), steps = sum(steps, na.rm = TRUE))
 ```
 
 
 Histogram of the total number of steps taken each day:
 
-```{r}
+
+```r
 with(stepsPerDay, histogram(~steps, type="count", ylab="Number of Days"))
 ```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
 
 Mean number of steps taken per day:
 
-```{r}
+
+```r
 mean(stepsPerDay$steps, na.rm = TRUE)
+```
+
+```
+## [1] 9354.23
 ```
 
 
 Median number of steps taken per day:
 
-```{r}
+
+```r
 median(stepsPerDay$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -59,22 +75,31 @@ median(stepsPerDay$steps, na.rm = TRUE)
 
 Number of steps per interval averaged across all days:
 
-```{r}
+
+```r
 stepsPerInterval <- summarize(group_by(activity, interval), steps = mean(steps, na.rm = TRUE))
 ```
 
 
 Plot showing average number of steps per interval:
 
-```{r}
+
+```r
 with(stepsPerInterval, xyplot(steps ~ interval, type="l"))
 ```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
 
 
 On average across all the days, this 5-minute interval contains the maximum number of steps:
 
-```{r}
+
+```r
 with(stepsPerInterval, interval[which.max(steps)])
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
@@ -82,22 +107,33 @@ with(stepsPerInterval, interval[which.max(steps)])
 
 Total number of missing values in the dataset:
 
-```{r}
+
+```r
 nrow(activity[is.na(activity$steps), ])
+```
+
+```
+## [1] 2304
 ```
 
 
 To impute missing values, an average number of steps across all non-missing intervals is used:
 
-```{r}
+
+```r
 avgOverall <- mean(activity[!is.na(activity$steps), ]$steps)
 avgOverall
+```
+
+```
+## [1] 37.3826
 ```
 
 
 Dataset with imputed values:
 
-```{r}
+
+```r
 # convert column with a number of steps to double in order not to miss fractions
 imputedActivity <- transform(activity, steps = as.double(steps))
 
@@ -112,29 +148,43 @@ for (i in 1:nrow(imputedActivity)) {
 
 Total number of steps taken per day after imputing missing values:
 
-```{r}
+
+```r
 imputedStepsPerDay <- summarize(group_by(imputedActivity, date), steps = sum(steps))
 ```
 
 
 Histogram of the total number of steps taken each day:
 
-```{r}
+
+```r
 with(imputedStepsPerDay, histogram(~steps, type="count", ylab="Number of Days"))
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
 
 Mean number of steps taken per day:
 
-```{r}
+
+```r
 mean(imputedStepsPerDay$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 
 Median number of steps taken per day:
 
-```{r}
+
+```r
 median(imputedStepsPerDay$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 After imputing missing values we can see mean and median number of steps increased and the histogram doesn't have oddly high left tail anymore.
@@ -143,7 +193,8 @@ After imputing missing values we can see mean and median number of steps increas
 
 Split activity dataset into observations occurred during the weekdays or during the weekend:
 
-```{r}
+
+```r
 getDayType <- function(date) {
   # use initValue to setup a type for dayType variable,
   # it's value will be overridden later
@@ -163,13 +214,17 @@ splitActivity <- mutate(imputedActivity, weekTime = getDayType(as.Date(date)))
 
 Number of steps per interval averaged across all weekdays and weekends:
 
-```{r}
+
+```r
 splitStepsPerInterval <- summarize(group_by(splitActivity, interval, weekTime), steps = mean(steps))
 ```
 
 Plot average number of steps per interval during the weekend and the rest of the week:
 
-```{r}
+
+```r
 par(mfrow = c(1, 2))
 with(splitStepsPerInterval, xyplot(steps ~ interval | weekTime, type="l"))
 ```
+
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png) 
